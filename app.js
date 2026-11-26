@@ -1,96 +1,35 @@
-const KEY = "prime-tracker-v1";
-const today = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-};
-const defaults = [
-  {id:"creatine",name:"Tomar creatina",frequency:"daily"},
-  {id:"train",name:"Entrenamiento",frequency:"weekdays"},
-  {id:"abs",name:"Abdominales",frequency:"weekdays"},
-  {id:"read",name:"Leer 10 minutos",frequency:"daily"},
-  {id:"water",name:"Tomar suficiente agua",frequency:"daily"}
-];
-let state = load();
-const $ = id => document.getElementById(id);
-function load(){
-  try {
-    const saved = JSON.parse(localStorage.getItem(KEY));
-    if(saved && Array.isArray(saved.habits) && saved.completions) return saved;
-  } catch(e){}
-  return {habits:defaults,completions:{}};
-}
+const KEY="prime-tracker-v1";
+const $=id=>document.getElementById(id);
+const today=()=>dateKey(new Date());
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+const defaults=[{id:"creatine",name:"Tomar creatina",days:[0,1,2,3,4,5,6],xp:15,enabled:true},{id:"train",name:"Entrenamiento",days:[1,2,3,4,5],xp:15,enabled:true},{id:"abs",name:"Abdominales",days:[1,2,3,4,5],xp:10,enabled:true},{id:"read",name:"Leer 10 minutos",days:[0,1,2,3,4,5,6],xp:15,enabled:true},{id:"water",name:"Tomar suficiente agua",days:[0,1,2,3,4,5,6],xp:10,enabled:true}];
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.habits)&&s.completions)return {...s,water:s.water||{},body:s.body||[],xp:s.xp||0,reminders:s.reminders||{},waterGoal:s.waterGoal||2000};}catch(e){}return {habits:defaults,completions:{},water:{},body:[],xp:0,reminders:{},waterGoal:2000}}
+let state=load(),editingId=null,period="all";
+state.habits=state.habits.map(h=>({...h,days:Array.isArray(h.days)?h.days:(h.frequency==="weekdays"?[1,2,3,4,5]:h.frequency==="weekends"?[0,6]:[0,1,2,3,4,5,6]),xp:h.xp||15,enabled:h.enabled!==false,reminder:h.reminder||"",reminderOn:!!h.reminderOn}));
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-function dateKey(offset=0){const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
-function isScheduled(h,date=new Date()){
-  const day=date.getDay();
-  return h.frequency==="daily" || (h.frequency==="weekdays" && day>=1 && day<=5) || (h.frequency==="weekends" && (day===0||day===6));
-}
-function completed(id,key=today()){return !!(state.completions[key]||[]).includes(id)}
-function toggle(id){
-  const key=today();state.completions[key] ||= [];
-  const list=state.completions[key];
-  state.completions[key]=list.includes(id)?list.filter(x=>x!==id):[...list,id];
-  save();render();
-}
-function frequencyLabel(f){return f==="daily"?"DIARIO":f==="weekdays"?"LUNES A VIERNES":"FIN DE SEMANA"}
-function render(){
-  const now=new Date();
-  $("date-chip").textContent=now.toLocaleDateString("es-MX",{day:"2-digit",month:"short"}).toUpperCase();
-  $("day-label").textContent=now.toLocaleDateString("es-MX",{weekday:"long",month:"long",day:"numeric"}).toUpperCase();
-  const scheduled=state.habits.filter(h=>isScheduled(h,now));
-  const done=scheduled.filter(h=>completed(h.id)).length;
-  const total=scheduled.length, pct=total?Math.round(done/total*100):0;
-  $("done-count").textContent=done;$("total-count").textContent=total;$("percent").textContent=pct+"%";
-  $("progress-fill").style.width=pct+"%";
-  $("progress-message").textContent=pct===100&&total?"Día completado. Buen trabajo.":pct>=50?"Vas bien. Mantén el ritmo.":"El progreso se construye con acciones pequeñas.";
-  const list=$("habit-list");list.innerHTML="";
-  if(!scheduled.length){list.innerHTML='<div class="empty-state">No tienes hábitos programados para hoy. Agrega uno con el botón +.</div>'}
-  scheduled.forEach(h=>{
-    const isDone=completed(h.id);
-    const el=document.createElement("article");el.className="habit"+(isDone?" is-done":"");
-    const check=document.createElement("button");check.className="check";check.setAttribute("aria-label",isDone?"Marcar pendiente":"Completar hábito");
-    check.innerHTML=isDone?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 4 4L19 6"/></svg>':"";
-    check.addEventListener("click",()=>toggle(h.id));
-    const main=document.createElement("div");main.className="habit-main";
-    const name=document.createElement("div");name.className="habit-name";name.textContent=h.name;
-    const meta=document.createElement("div");meta.className="habit-meta";meta.textContent=frequencyLabel(h.frequency);
-    main.append(name,meta);
-    const actions=document.createElement("div");actions.className="habit-actions";
-    const del=document.createElement("button");del.className="delete-button";del.textContent="···";del.title="Eliminar hábito";
-    del.addEventListener("click",()=>{if(confirm(`¿Eliminar "${h.name}" de tu tracker?`)){state.habits=state.habits.filter(x=>x.id!==h.id);save();render();showToast("Hábito eliminado")}})
-    actions.append(del);el.append(check,main,actions);list.append(el);
-  });
-  $("streak").textContent=calculateStreak();
-  $("week-rate").textContent=weeklyRate();
-}
-function calculateStreak(){
-  let streak=0;
-  for(let i=0;i<365;i++){
-    const d=new Date();d.setDate(d.getDate()-i);
-    const scheduled=state.habits.filter(h=>isScheduled(h,d));
-    if(!scheduled.length){if(i===0)continue;else break}
-    const key=dateKey(-i);
-    if(scheduled.every(h=>(state.completions[key]||[]).includes(h.id)))streak++;
-    else break;
-  }
-  return streak;
-}
-function weeklyRate(){
-  let done=0,total=0;
-  for(let i=0;i<7;i++){
-    const d=new Date();d.setDate(d.getDate()-i);
-    const key=dateKey(-i);
-    state.habits.filter(h=>isScheduled(h,d)).forEach(h=>{total++;if((state.completions[key]||[]).includes(h.id))done++});
-  }
-  return total?Math.round(done/total*100):0;
-}
-function showToast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1900)}
-$("open-add").addEventListener("click",()=>$("habit-dialog").showModal());
-$("close-add").addEventListener("click",()=>$("habit-dialog").close());
-$("habit-form").addEventListener("submit",e=>{
-  e.preventDefault();const name=$("habit-name").value.trim();if(!name)return;
-  state.habits.push({id:"h"+Date.now(),name,frequency:$("habit-frequency").value});
-  save();render();$("habit-dialog").close();$("habit-form").reset();showToast("Hábito agregado");
-});
-if("serviceWorker" in navigator && location.protocol!=="file:"){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
-render();
+function isScheduled(h,d=new Date()){return h.enabled!==false&&h.days.includes(d.getDay())}
+function completed(id,key=today()){return (state.completions[key]||[]).includes(id)}
+function awardXP(h){state.xp=(state.xp||0)+(h.xp||15)}
+function toggle(id){const h=state.habits.find(x=>x.id===id);if(!h)return;const k=today();state.completions[k]||=[];if(completed(id)){state.completions[k]=state.completions[k].filter(x=>x!==id);state.xp=Math.max(0,(state.xp||0)-(h.xp||15));}else{state.completions[k].push(id);awardXP(h)}save();render()}
+function daysLabel(days){const names=["D","L","M","X","J","V","S"];return days.slice().sort((a,b)=>a-b).map(x=>names[x]).join(" · ")||"Sin días"}
+function renderHabits(){const now=new Date(),scheduled=state.habits.filter(h=>isScheduled(h,now)),done=scheduled.filter(h=>completed(h.id)).length,total=scheduled.length,pct=total?Math.round(done/total*100):0;$('done-count').textContent=done;$('total-count').textContent=total;$('percent').textContent=pct+"%";$('progress-fill').style.width=pct+"%";$('progress-message').textContent=pct===100&&total?"Día completado. Buen trabajo.":pct>=50?"Vas bien. Mantén el ritmo.":"El progreso se construye con acciones pequeñas.";const list=$('habit-list');list.innerHTML="";if(!scheduled.length)list.innerHTML='<div class="empty-state">No tienes hábitos programados para hoy. Agrega uno con el botón +.</div>';scheduled.forEach(h=>{const done=completed(h.id),el=document.createElement('article');el.className='habit'+(done?' is-done':'');const check=document.createElement('button');check.className='check';check.setAttribute('aria-label',done?'Marcar pendiente':'Completar hábito');check.innerHTML=done?'✓':'';check.addEventListener('click',()=>toggle(h.id));const main=document.createElement('div');main.className='habit-main';const name=document.createElement('div');name.className='habit-name';name.textContent=h.name;const meta=document.createElement('div');meta.className='habit-meta';meta.textContent=`${daysLabel(h.days)} · ${h.xp} XP${h.reminderOn&&h.reminder?' · '+h.reminder:''}`;main.append(name,meta);const actions=document.createElement('div');actions.className='habit-actions';const edit=document.createElement('button');edit.className='delete-button';edit.textContent='✎';edit.title='Editar hábito';edit.onclick=()=>openHabit(h.id);const del=document.createElement('button');del.className='delete-button';del.textContent='×';del.title='Eliminar hábito';del.onclick=()=>{if(confirm(`¿Eliminar "${h.name}"?`)){state.habits=state.habits.filter(x=>x.id!==h.id);save();render();toast('Hábito eliminado')}};actions.append(edit,del);el.append(check,main,actions);list.append(el)});$('streak').textContent=calculateStreak();$('week-rate').textContent=weeklyRate()}
+function calculateStreak(){let n=0;for(let i=0;i<365;i++){const d=new Date();d.setDate(d.getDate()-i);const s=state.habits.filter(h=>isScheduled(h,d));if(!s.length){if(i===0)continue;break}if(s.every(h=>completed(h.id,dateKey(d))))n++;else break}return n}
+function weeklyRate(){let done=0,total=0;for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);state.habits.filter(h=>isScheduled(h,d)).forEach(h=>{total++;if(completed(h.id,dateKey(d)))done++})}return total?Math.round(done/total*100):0}
+function renderXP(){const xp=state.xp||0,level=Math.floor(xp/100)+1,inside=xp%100;$('level').textContent=level;$('xp-label').textContent=xp+' XP';$('rank').textContent=level<3?'INICIANDO':level<6?'CONSTANTE':level<10?'DISCIPLINADO':'PRIME';$('xp-fill').style.width=inside+'%';$('xp-next').textContent=(100-inside)+' XP para el siguiente nivel';$('side-level').textContent=`NIVEL ${level} · ${$('rank').textContent}`;$('total-xp').textContent=xp;$('all-completions').textContent=Object.values(state.completions).reduce((n,a)=>n+a.length,0);const achievements=[['Primera acción','Completa tu primer hábito',Object.values(state.completions).some(a=>a.length)],['Constancia','Alcanza una racha de 3 días',calculateStreak()>=3],['Nivel 3','Acumula 200 XP',xp>=200],['Primer registro','Registra tu peso por primera vez',state.body.length>0],['Hidratación','Registra agua por primera vez',Object.keys(state.water).length>0]];$('achievements').innerHTML='';achievements.forEach(a=>{const el=document.createElement('div');el.className='achievement'+(a[2]?'':' locked');el.innerHTML=`<div class="medal">${a[2]?'✦':'◇'}</div><div><b>${a[0]}</b><small>${a[1]}</small></div>`;$('achievements').append(el)})}
+function renderWater(){const key=today(),total=state.water[key]||0,goal=Number(state.waterGoal)||2000,pct=Math.min(100,Math.round(total/goal*100));$('water-total').textContent=total.toLocaleString('es-MX');$('water-fill').style.width=pct+'%';$('water-percent').textContent=pct+'% de tu meta';$('water-goal-label').textContent='Meta: '+goal.toLocaleString('es-MX')+' ml';$('water-goal').value=String(goal);const hist=$('water-history');hist.innerHTML='';for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const v=state.water[dateKey(d)]||0;const el=document.createElement('div');el.className='bar-day';el.innerHTML=`<div class="bar-column"><i style="height:${Math.min(100,v/goal*100)}%"></i></div><b>${v>=1000?(v/1000).toFixed(v%1000?1:0)+'L':v}</b><span>${d.toLocaleDateString('es-MX',{weekday:'short'}).slice(0,2)}</span>`;hist.append(el)}}
+function sortedBody(){return state.body.slice().sort((a,b)=>a.date.localeCompare(b.date))}
+function renderBody(){const arr=sortedBody(),last=arr[arr.length-1],prev=arr.length>1?arr[arr.length-2]:null;$('latest-weight').textContent=last?last.weight.toFixed(1)+' kg':'—';$('latest-waist').textContent=last&&last.waist!=null?last.waist.toFixed(1)+' cm':'—';$('weight-change').textContent=prev?`${last.weight-prev.weight>0?'+':''}${(last.weight-prev.weight).toFixed(1)} kg vs. registro anterior`:'Aún sin comparación';$('waist-change').textContent=prev&&last.waist!=null&&prev.waist!=null?`${last.waist-prev.waist>0?'+':''}${(last.waist-prev.waist).toFixed(1)} cm vs. anterior`:'Aún sin comparación';$('body-count').textContent=arr.length+' REGISTROS';$('body-history').innerHTML='';arr.slice().reverse().forEach(r=>{const el=document.createElement('div');el.className='history-row';el.innerHTML=`<div><b>${new Date(r.date+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}</b><small>${r.waist==null?'Cintura no registrada':`Cintura: ${r.waist.toFixed(1)} cm`}</small></div><strong>${r.weight.toFixed(1)} kg</strong>`;const del=document.createElement('button');del.className='delete-button';del.textContent='×';del.onclick=()=>{if(confirm('¿Eliminar este registro?')){state.body=state.body.filter(x=>x.id!==r.id);save();render()}};el.append(del);$('body-history').append(el)})}
+function drawChart(svgId,emptyId,arr,field,unit){const svg=$(svgId),empty=$(emptyId);svg.innerHTML='';const data=arr.filter(x=>x[field]!=null);if(data.length<2){svg.style.display='none';empty.style.display='block';return}svg.style.display='block';empty.style.display='none';const vals=data.map(x=>Number(x[field])),min=Math.min(...vals),max=Math.max(...vals),span=max-min||1;const x=i=>35+i*(530/(data.length-1)),y=v=>185-(v-min+span*.12)/(span*1.24)*150;for(let i=0;i<4;i++){const yy=30+i*50;const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',30);line.setAttribute('x2',570);line.setAttribute('y1',yy);line.setAttribute('y2',yy);line.setAttribute('class','grid');svg.append(line)}const points=data.map((d,i)=>`${x(i)},${y(Number(d[field]))}`).join(' ');const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');poly.setAttribute('points',points);svg.append(poly);data.forEach((d,i)=>{const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',x(i));c.setAttribute('cy',y(Number(d[field])));c.setAttribute('r',5);svg.append(c)});const t1=document.createElementNS('http://www.w3.org/2000/svg','text');t1.setAttribute('x',34);t1.setAttribute('y',214);t1.textContent=data[0].date.slice(5);const t2=document.createElementNS('http://www.w3.org/2000/svg','text');t2.setAttribute('x',565);t2.setAttribute('y',214);t2.setAttribute('text-anchor','end');t2.textContent=data[data.length-1].date.slice(5);svg.append(t1,t2);}
+function renderProgress(){let arr=sortedBody();if(period!=='all'){const cutoff=new Date();cutoff.setDate(cutoff.getDate()-Number(period));const k=dateKey(cutoff);arr=arr.filter(x=>x.date>=k)}const first=arr.find(x=>x.weight!=null),last=arr.slice().reverse().find(x=>x.weight!=null);const change=first&&last?last.weight-first.weight:null;$('chart-weight-change').textContent=change==null?'—':`${change>0?'+':''}${change.toFixed(1)} kg`;$('chart-weight-caption').textContent=change==null?'Registra tu peso para comenzar':change<0?'Cambio desde el primer registro':'Cambio desde el primer registro';const wf=arr.filter(x=>x.waist!=null),wc=wf.length?wf[wf.length-1].waist-wf[0].waist:null;$('chart-waist-change').textContent=wc==null?'—':`${wc>0?'+':''}${wc.toFixed(1)} cm`;$('chart-waist-caption').textContent=wc==null?'Registra tu cintura para comenzar':'Cambio desde la primera medida';drawChart('weight-chart','weight-chart-empty',arr,'weight','kg');drawChart('waist-chart','waist-chart-empty',arr,'waist','cm');const all=sortedBody(),a=all[0],b=all[all.length-1];$('total-loss').textContent=a&&b?(a.weight-b.weight>=0?'−':'＋')+Math.abs(a.weight-b.weight).toFixed(1)+' kg':'—';if(a&&b&&a.date!==b.date){const weeks=Math.max(1,(new Date(b.date)-new Date(a.date))/(7*86400000));$('weekly-loss').textContent=((a.weight-b.weight)/weeks).toFixed(2)+' kg';}else $('weekly-loss').textContent='—'}
+function renderReminders(){const el=$('reminder-list');el.innerHTML='';state.habits.forEach(h=>{const row=document.createElement('label');row.className='reminder-row';row.innerHTML=`<span>${escapeHTML(h.name)}</span><span>${h.reminderOn&&h.reminder?h.reminder:'Sin horario'}</span>`;el.append(row)});const p=window.Notification?Notification.permission:'unsupported';$('notification-status').textContent='Permiso de notificaciones: '+p}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){const now=new Date();$('date-chip').textContent=now.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}).toUpperCase();$('day-label').textContent=now.toLocaleDateString('es-MX',{weekday:'long',month:'long',day:'numeric'}).toUpperCase();renderHabits();renderXP();renderWater();renderBody();renderProgress();renderReminders()}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+function navigate(view){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.body.classList.remove('menu-open');window.scrollTo(0,0);if(view==='progress')renderProgress()}
+function openHabit(id){editingId=id||null;const h=state.habits.find(x=>x.id===id);$('habit-dialog-title').textContent=h?'Editar hábito':'Nuevo hábito';$('habit-name').value=h?.name||'';$('habit-reminder').value=h?.reminder||'';$('habit-reminder-on').checked=!!h?.reminderOn;$('habit-xp').value=String(h?.xp||15);$('habit-enabled').value=String(h?.enabled!==false);document.querySelectorAll('#day-picker input').forEach(c=>c.checked?h?.days?.includes(Number(c.value)):false);document.querySelectorAll('#day-picker input').forEach(c=>c.checked=h?h.days.includes(Number(c.value)):[1,2,3,4,5].includes(Number(c.value)));$('habit-dialog').showModal()}
+$('menu-open').onclick=()=>$('body').classList.add('menu-open');$('menu-close').onclick=()=>document.body.classList.remove('menu-open');$('scrim').onclick=()=>document.body.classList.remove('menu-open');document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('open-add').onclick=()=>openHabit();$('close-add').onclick=()=>$('habit-dialog').close();
+$('habit-form').addEventListener('submit',e=>{e.preventDefault();const name=$('habit-name').value.trim(),days=[...document.querySelectorAll('#day-picker input:checked')].map(c=>Number(c.value));if(!name||!days.length){toast('Elige al menos un día');return}const data={name,days,xp:Number($('habit-xp').value),enabled:$('habit-enabled').value==='true',reminder:$('habit-reminder').value,reminderOn:$('habit-reminder-on').checked};if(editingId){Object.assign(state.habits.find(h=>h.id===editingId),data)}else state.habits.push({id:'h'+Date.now(),...data});save();$('habit-dialog').close();render();toast(editingId?'Hábito actualizado':'Hábito agregado');editingId=null});
+document.querySelectorAll('[data-water]').forEach(b=>b.onclick=()=>{const k=today(),amount=Number(b.dataset.water);state.water[k]=(state.water[k]||0)+amount;state.waterLastAdd=amount;save();renderWater();toast('Agregaste '+b.dataset.water+' ml')});$('water-undo').onclick=()=>{const k=today();const amount=state.waterLastAdd||500;state.water[k]=Math.max(0,(state.water[k]||0)-amount);state.waterLastAdd=0;save();renderWater();toast('Se deshizo el último registro')};$('water-goal').onchange=e=>{state.waterGoal=Number(e.target.value);save();renderWater()};$('body-date').value=today();$('body-form').onsubmit=e=>{e.preventDefault();const date=$('body-date').value,weight=Number($('body-weight').value),waist=$('body-waist').value===''?null:Number($('body-waist').value);if(!date||!weight){toast('Completa fecha y peso');return}const existing=state.body.find(x=>x.date===date);if(existing){existing.weight=weight;existing.waist=waist}else state.body.push({id:'b'+Date.now(),date,weight,waist});save();$('body-weight').value='';$('body-waist').value='';render();toast('Registro guardado')};document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('selected',x===b));renderProgress()});
+$('enable-notifications').onclick=async()=>{if(!('Notification'in window)){toast('Este navegador no admite notificaciones');return}try{const p=await Notification.requestPermission();renderReminders();toast(p==='granted'?'Permiso concedido':'Permiso no concedido')}catch(e){toast('No se pudo solicitar el permiso')}};
+$('export-data').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='prime-backup-'+today()+'.json';a.click();URL.revokeObjectURL(url)};
+if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});render();

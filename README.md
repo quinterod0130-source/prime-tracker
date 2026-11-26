@@ -1,30 +1,19 @@
-# PRIME — Daily Discipline Tracker
+# PRIME 2.2
 
-Primera versión de tu tracker personal. Es una PWA: se puede instalar desde Safari en iPhone después de publicarla en una dirección HTTPS.
+Actualización PWA de PRIME: hábitos con selección de días, XP y niveles, seguimiento diario de agua, registros de peso/cintura, gráficas, historial, logros y menú lateral.
 
-## Incluye
-- Checklist diario con hábitos predeterminados.
-- Agregar y eliminar hábitos.
-- Frecuencia diaria, entre semana o fines de semana.
-- Progreso diario, racha y porcentaje semanal.
-- Guardado local en el dispositivo.
-- Interfaz oscura con acento naranja.
-- Caché básica para abrir la app después de la primera visita.
+## Publicar en GitHub Pages
+1. Descomprime el ZIP.
+2. Entra al repositorio de GitHub que publica PRIME.
+3. Abre **Add file → Upload files**.
+4. Arrastra el CONTENIDO de esta carpeta (no la carpeta completa) a la raíz del repositorio y confirma **Commit changes**.
+5. Abre PRIME desde Safari en el iPhone. Cierra la app y vuelve a abrirla; si ves la versión anterior, espera un minuto y recarga.
 
-## Importante
-- Los datos se guardan en el almacenamiento local del navegador. No se sincronizan entre dispositivos ni se respaldan en la nube.
-- Esta versión no incluye notificaciones ni widget nativo de iOS.
-- Para instalarla en iPhone debe estar publicada en HTTPS. GitHub Pages puede alojarla gratis.
+## Datos
+Se conserva la clave localStorage `prime-tracker-v1` de la versión inicial. Los hábitos y completados existentes se cargan y se amplían con los nuevos campos. Agua, peso, cintura y XP se guardan en el almacenamiento local del navegador de ese iPhone. Usa Configuración → Exportar mis datos para crear una copia JSON.
 
-## Publicar gratis con GitHub Pages
-1. Crea una cuenta en https://github.com si no tienes una.
-2. Crea un repositorio nuevo, por ejemplo `prime-tracker`.
-3. Sube todos los archivos de esta carpeta a la raíz del repositorio.
-4. En el repositorio entra a **Settings → Pages**.
-5. En **Build and deployment**, selecciona **Deploy from a branch**.
-6. Selecciona `main` y `/ (root)`, y guarda.
-7. Espera a que GitHub te dé una URL similar a `https://TU-USUARIO.github.io/prime-tracker/`.
-8. En tu iPhone abre esa URL con Safari → botón Compartir → **Añadir a pantalla de inicio**.
+## Notificaciones en iOS
+Esta versión solicita el permiso del navegador y guarda los horarios de recordatorio de cada hábito. El service worker incluye los controladores `push` y `notificationclick`, pero **no envía notificaciones programadas por sí mismo**. Para recibir push cuando la PWA está cerrada se necesita configurar un servidor/proveedor push, claves VAPID y guardar las suscripciones de los dispositivos. GitHub Pages es alojamiento estático y no puede ejecutar ese envío programado. No se debe considerar habilitado el recordatorio automático en segundo plano hasta conectar ese servicio.
 
-## Editar
-Puedes modificar `app.js` para cambiar los hábitos predeterminados y `styles.css` para cambiar colores y diseño.
+## Gráficas
+Las gráficas de peso y cintura requieren al menos dos registros para mostrar una línea de tendencia. Los registros se pueden editar guardando otra medición en la misma fecha; el historial permite eliminar registros.

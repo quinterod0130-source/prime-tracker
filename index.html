@@ -1,92 +1,31 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#101010">
-  <meta name="description" content="PRIME — tu tracker personal de hábitos y disciplina.">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css">
-  <title>PRIME — Daily Discipline</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101010"><meta name="description" content="PRIME — tu sistema personal de hábitos y progreso.">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png"><link rel="stylesheet" href="styles.css">
+<title>PRIME — Daily Discipline</title>
 </head>
 <body>
-  <main class="app-shell">
-    <header class="topbar">
-      <div>
-        <div class="brand">PRIME<span>.</span></div>
-        <div class="eyebrow">DAILY DISCIPLINE SYSTEM</div>
-      </div>
-      <div class="date-chip" id="date-chip">HOY</div>
-    </header>
-
-    <section class="hero">
-      <p class="eyebrow" id="day-label">TU DÍA, TUS REGLAS</p>
-      <h1>Earn your<br><span>day.</span></h1>
-      <p class="subcopy">No necesitas hacerlo perfecto. Necesitas presentarte.</p>
-    </section>
-
-    <section class="progress-card">
-      <div class="progress-head">
-        <div>
-          <p class="eyebrow">PROGRESO DE HOY</p>
-          <div class="progress-number"><span id="done-count">0</span><small> / <span id="total-count">0</span> COMPLETADOS</small></div>
-        </div>
-        <div class="percent" id="percent">0%</div>
-      </div>
-      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      <p class="progress-foot" id="progress-message">Un paso a la vez.</p>
-    </section>
-
-    <section class="section-heading">
-      <div>
-        <p class="eyebrow">CHECKLIST</p>
-        <h2>Hábitos de hoy</h2>
-      </div>
-      <button class="add-button" id="open-add" aria-label="Agregar hábito">+</button>
-    </section>
-
-    <section id="habit-list" class="habit-list" aria-live="polite"></section>
-
-    <section class="stats-grid">
-      <article class="stat-card">
-        <p class="eyebrow">RACHA ACTUAL</p>
-        <div class="stat-value"><span id="streak">0</span><small> días</small></div>
-        <p class="stat-note">Días completando todo</p>
-      </article>
-      <article class="stat-card">
-        <p class="eyebrow">ESTA SEMANA</p>
-        <div class="stat-value"><span id="week-rate">0</span><small>%</small></div>
-        <p class="stat-note">Hábitos completados</p>
-      </article>
-    </section>
-
-    <footer>DISCIPLINE OVER MOTIVATION<span> · </span>PRIME 01</footer>
-  </main>
-
-  <dialog id="habit-dialog">
-    <form method="dialog" id="habit-form">
-      <div class="dialog-top">
-        <div>
-          <p class="eyebrow">PERSONALIZA TU SISTEMA</p>
-          <h2>Nuevo hábito</h2>
-        </div>
-        <button type="button" class="close-button" id="close-add" aria-label="Cerrar">×</button>
-      </div>
-      <label for="habit-name">Nombre del hábito</label>
-      <input id="habit-name" maxlength="38" placeholder="Ej. Leer 10 páginas" required>
-      <label for="habit-frequency">Frecuencia</label>
-      <select id="habit-frequency">
-        <option value="daily">Todos los días</option>
-        <option value="weekdays">Entre semana (lun–vie)</option>
-        <option value="weekends">Fin de semana</option>
-      </select>
-      <button class="primary-button" type="submit">Agregar hábito</button>
-    </form>
-  </dialog>
-
-  <div class="toast" id="toast" role="status"></div>
-  <script src="app.js"></script>
-</body>
-</html>
+<div class="app-shell">
+<header class="topbar"><button class="menu-button" id="menu-open" aria-label="Abrir menú">☰</button><div class="brand-wrap"><div class="brand">PRIME<span>.</span></div><div class="eyebrow">DAILY DISCIPLINE SYSTEM</div></div><div class="date-chip" id="date-chip">HOY</div></header>
+<div class="scrim" id="scrim"></div>
+<aside class="sidebar" id="sidebar" aria-label="Menú principal"><div class="side-head"><div class="brand">PRIME<span>.</span></div><button class="close-button" id="menu-close" aria-label="Cerrar menú">×</button></div><div class="side-user"><div class="avatar">P</div><div><b>PRIME MEMBER</b><small id="side-level">NIVEL 1 · INICIANDO</small></div></div>
+<nav class="side-nav"><button class="nav-item active" data-view="habits"><span>✓</span> Hábitos</button><button class="nav-item" data-view="water"><span>◉</span> Consumo de agua</button><button class="nav-item" data-view="body"><span>⚖</span> Peso y cintura</button><button class="nav-item" data-view="progress"><span>▥</span> Progreso físico</button><button class="nav-item" data-view="stats"><span>✦</span> Estadísticas y logros</button><button class="nav-item" data-view="settings"><span>⚙</span> Configuración</button></nav><div class="side-foot">DISCIPLINE OVER MOTIVATION</div></aside>
+<main id="main-content">
+<section class="view active" id="view-habits">
+<section class="hero"><p class="eyebrow" id="day-label">TU DÍA, TUS REGLAS</p><h1>Earn your<br><span>day.</span></h1><p class="subcopy">No necesitas hacerlo perfecto. Necesitas presentarte.</p></section>
+<section class="xp-card"><div class="xp-top"><div><p class="eyebrow">TU NIVEL</p><div class="xp-level"><span id="level">1</span><small id="xp-label">0 XP</small></div></div><div class="xp-rank" id="rank">INICIANDO</div></div><div class="progress-track"><div class="progress-fill" id="xp-fill"></div></div><p class="xp-caption" id="xp-next">100 XP para el siguiente nivel</p></section>
+<section class="progress-card"><div class="progress-head"><div><p class="eyebrow">PROGRESO DE HOY</p><div class="progress-number"><span id="done-count">0</span><small> / <span id="total-count">0</span> COMPLETADOS</small></div></div><div class="percent" id="percent">0%</div></div><div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div><p class="progress-foot" id="progress-message">Un paso a la vez.</p></section>
+<section class="section-heading"><div><p class="eyebrow">CHECKLIST</p><h2>Hábitos de hoy</h2></div><button class="add-button" id="open-add" aria-label="Agregar hábito">+</button></section><section id="habit-list" class="habit-list" aria-live="polite"></section>
+<section class="stats-grid"><article class="stat-card"><p class="eyebrow">RACHA ACTUAL</p><div class="stat-value"><span id="streak">0</span><small> días</small></div><p class="stat-note">Días completando hábitos</p></article><article class="stat-card"><p class="eyebrow">ESTA SEMANA</p><div class="stat-value"><span id="week-rate">0</span><small>%</small></div><p class="stat-note">Hábitos completados</p></article></section>
+</section>
+<section class="view" id="view-water"><div class="page-heading"><p class="eyebrow">HIDRATACIÓN</p><h1>Consumo de<br><span>agua.</span></h1><p class="subcopy">Un registro sencillo, un día a la vez.</p></div><article class="panel water-panel"><div class="panel-top"><div><p class="eyebrow">HOY HAS TOMADO</p><div class="big-number"><span id="water-total">0</span><small> ml</small></div></div><div class="water-drop">◉</div></div><div class="water-track"><div id="water-fill"></div></div><div class="between"><span id="water-percent">0% de tu meta</span><span id="water-goal-label">Meta: 2,000 ml</span></div><label for="water-goal">Meta diaria</label><select id="water-goal"><option value="1500">1,500 ml</option><option value="2000" selected>2,000 ml</option><option value="2500">2,500 ml</option><option value="3000">3,000 ml</option></select><h3>Agregar agua</h3><div class="water-actions"><button data-water="500" class="primary-water">+500 ml</button><button data-water="1000">+1,000 ml</button><button data-water="1500">+1,500 ml</button><button data-water="2000">+2,000 ml</button></div><button id="water-undo" class="text-button">Deshacer último registro</button><p class="muted-note">Cada toque se guarda con la fecha del día. La meta es editable.</p></article><article class="panel"><div class="panel-heading"><h2>Últimos 7 días</h2><span class="eyebrow">ML / DÍA</span></div><div id="water-history" class="mini-bars"></div></article></section>
+<section class="view" id="view-body"><div class="page-heading"><p class="eyebrow">SEGUIMIENTO CORPORAL</p><h1>Peso y<br><span>medidas.</span></h1><p class="subcopy">Registra tus medidas y observa la tendencia, no un solo día.</p></div><form class="panel log-form" id="body-form"><h2>Nuevo registro</h2><label for="body-date">Fecha</label><input id="body-date" type="date" required><div class="form-grid"><div><label for="body-weight">Peso (kg)</label><input id="body-weight" type="number" min="20" max="400" step="0.1" placeholder="Ej. 90.2" required></div><div><label for="body-waist">Cintura (cm)</label><input id="body-waist" type="number" min="30" max="250" step="0.1" placeholder="Ej. 92" ></div></div><button class="primary-button" type="submit">Guardar registro</button></form><div class="summary-grid"><article class="stat-card"><p class="eyebrow">PESO ACTUAL</p><div class="stat-value" id="latest-weight">—</div><p class="stat-note" id="weight-change">Aún sin registros</p></article><article class="stat-card"><p class="eyebrow">CINTURA ACTUAL</p><div class="stat-value" id="latest-waist">—</div><p class="stat-note" id="waist-change">Aún sin registros</p></article></div><article class="panel"><div class="panel-heading"><h2>Historial</h2><span class="eyebrow" id="body-count">0 REGISTROS</span></div><div id="body-history" class="history-list"></div></article></section>
+<section class="view" id="view-progress"><div class="page-heading"><p class="eyebrow">TUS DATOS, TU EVOLUCIÓN</p><h1>Progreso<br><span>físico.</span></h1><p class="subcopy">Las gráficas se construyen con tus registros guardados.</p></div><div class="period-picker" id="period-picker"><button class="selected" data-period="all">Todo</button><button data-period="30">30 días</button><button data-period="90">3 meses</button><button data-period="180">6 meses</button></div><article class="panel chart-panel"><div class="panel-heading"><h2>Evolución del peso</h2><span class="eyebrow">KG</span></div><div class="chart-summary"><strong id="chart-weight-change">—</strong><span id="chart-weight-caption">Registra tu peso para comenzar</span></div><svg id="weight-chart" class="chart" viewBox="0 0 600 220" role="img" aria-label="Gráfica de evolución del peso"></svg><div id="weight-chart-empty" class="chart-empty">Tu gráfica aparecerá aquí cuando guardes al menos un registro.</div></article><article class="panel chart-panel"><div class="panel-heading"><h2>Circunferencia de cintura</h2><span class="eyebrow">CM</span></div><div class="chart-summary"><strong id="chart-waist-change">—</strong><span id="chart-waist-caption">Registra tu cintura para comenzar</span></div><svg id="waist-chart" class="chart" viewBox="0 0 600 220" role="img" aria-label="Gráfica de evolución de cintura"></svg><div id="waist-chart-empty" class="chart-empty">Tu gráfica aparecerá aquí cuando registres medidas.</div></article><div class="summary-grid"><article class="stat-card"><p class="eyebrow">CAMBIO DESDE EL INICIO</p><div class="stat-value" id="total-loss">—</div><p class="stat-note">Variación de peso</p></article><article class="stat-card"><p class="eyebrow">PROMEDIO SEMANAL</p><div class="stat-value" id="weekly-loss">—</div><p class="stat-note">Estimación según fechas registradas</p></article></div></section>
+<section class="view" id="view-stats"><div class="page-heading"><p class="eyebrow">CONSISTENCIA</p><h1>Estadísticas<br><span>& logros.</span></h1></div><div class="summary-grid"><article class="stat-card"><p class="eyebrow">XP TOTAL</p><div class="stat-value" id="total-xp">0</div><p class="stat-note">Puntos acumulados</p></article><article class="stat-card"><p class="eyebrow">HÁBITOS COMPLETADOS</p><div class="stat-value" id="all-completions">0</div><p class="stat-note">Registros históricos</p></article></div><article class="panel"><div class="panel-heading"><h2>Logros</h2><span class="eyebrow">DESBLOQUEABLES</span></div><div id="achievements" class="achievement-list"></div></article></section>
+<section class="view" id="view-settings"><div class="page-heading"><p class="eyebrow">PERSONALIZA TU SISTEMA</p><h1>Configura<br><span>PRIME.</span></h1></div><article class="panel"><h2>Notificaciones y recordatorios</h2><p class="muted-note">Puedes guardar horarios y activar el permiso de notificaciones. Importante: para que iOS envíe recordatorios programados cuando PRIME esté cerrado, hace falta conectar un servidor de notificaciones push. GitHub Pages por sí solo no puede programarlos.</p><button class="primary-button" id="enable-notifications">Solicitar permiso en este iPhone</button><p id="notification-status" class="status-note">Estado: no configurado</p><div class="reminder-list" id="reminder-list"></div><p class="muted-note">Los horarios quedan guardados en este dispositivo; el envío automático en segundo plano se habilitará al conectar el servicio push.</p></article><article class="panel"><h2>Datos y privacidad</h2><p class="muted-note">Tus hábitos, registros de agua, peso, cintura y XP se guardan localmente en este dispositivo. No se sincronizan automáticamente con otros dispositivos.</p><button id="export-data" class="secondary-button">Exportar mis datos (JSON)</button></article></section>
+</main><footer>DISCIPLINE OVER MOTIVATION<span> · </span>PRIME</footer></div>
+<dialog id="habit-dialog"><form id="habit-form"><div class="dialog-top"><div><p class="eyebrow">PERSONALIZA TU SISTEMA</p><h2 id="habit-dialog-title">Nuevo hábito</h2></div><button type="button" class="close-button" id="close-add">×</button></div><label for="habit-name">Nombre del hábito</label><input id="habit-name" maxlength="38" placeholder="Ej. Leer 10 páginas" required><label>Días de la semana</label><div class="day-picker" id="day-picker"><label><input type="checkbox" value="1" checked><span>L</span></label><label><input type="checkbox" value="2" checked><span>M</span></label><label><input type="checkbox" value="3" checked><span>X</span></label><label><input type="checkbox" value="4" checked><span>J</span></label><label><input type="checkbox" value="5" checked><span>V</span></label><label><input type="checkbox" value="6"><span>S</span></label><label><input type="checkbox" value="0"><span>D</span></label></div><label for="habit-reminder">Recordatorio (opcional)</label><div class="inline-fields"><input id="habit-reminder" type="time"><label class="switch-label"><input id="habit-reminder-on" type="checkbox"> Activar</label></div><div class="form-grid"><div><label for="habit-xp">XP al completar</label><select id="habit-xp"><option value="10">10 XP</option><option value="15" selected>15 XP</option><option value="20">20 XP</option><option value="25">25 XP</option></select></div><div><label for="habit-enabled">Estado</label><select id="habit-enabled"><option value="true">Activo</option><option value="false">Pausado</option></select></div></div><button class="primary-button" type="submit">Guardar hábito</button></form></dialog>
+<div class="toast" id="toast" role="status"></div><script src="app.js"></script>
+</body></html>
